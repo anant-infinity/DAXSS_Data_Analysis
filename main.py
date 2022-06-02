@@ -3,7 +3,7 @@ import netCDF4 as nc
 import matplotlib.pyplot as plt
 
 # Path to Level-1 File
-daxss_level1_file_path = 'C:/Users/278an/Desktop/science_analysis/301_Data/level1/daxss_solarSXR_level1_2022-02-14-mission_v1.0.0.ncdf'
+daxss_level1_file_path = 'C:/Users/278an/Desktop/science_analysis/301_Data/DAXSS/level1/daxss_solarSXR_level1_2022-02-14-mission_v1.0.0.ncdf'
 # Import File as a netCDF Dataset
 daxsslevel1 = nc.Dataset(daxss_level1_file_path)
 
@@ -13,7 +13,7 @@ print(daxsslevel1)
 # Creating a dictionary containing the information about the dataset
 metadata_info_dict = daxsslevel1.__dict__
 # Access particular element in metadata of dataset
-# print (metadata_info_dict['TITLE'])
+print (metadata_info_dict['TITLE'])
 
 # Accessing metadata of the dimensions
 for dim in daxsslevel1.dimensions.values():
