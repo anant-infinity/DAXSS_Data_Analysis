@@ -23,13 +23,11 @@ plt.colorbar()
 #print(a.Instrument)
 
 # Searching for GOES XRS Data
-#results = Fido.search(a.Time("2022/05/27", "2022/06/1"),a.Instrument.goes )
-#print(results.show("Start Time", 'End Time', 'Instrument', 'Physobs'))
+results = Fido.search(a.Time("2022/05/27", "2022/06/1"),a.Instrument.goes )
+print(results.show("Start Time", 'End Time', 'Instrument', 'Physobs'))
 
 #Downloading the raw files
-#downloaded_files = Fido.fetch(results, path='C:/Users/278an/Desktop/science_analysis/301_Data/GOES/{file}')
-
-
+downloaded_files = Fido.fetch(results, path='C:/Users/278an/Desktop/science_analysis/301_Data/GOES/{file}')
 
 
 # Path to Level-1 File
