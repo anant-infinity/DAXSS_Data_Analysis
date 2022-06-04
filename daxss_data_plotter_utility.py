@@ -129,33 +129,39 @@ def loadRawDataUser():
                     bg="lightblue")
     button.grid(row=1, column=3, columnspan=1,sticky='nesw')
 
+    l3 = Label(second_frame, fg='black', text="X Scale Type", font=('Arial', 12, 'bold'), width=label_width,
+               borderwidth=border_width, relief=label_relief, bg="lightblue")
+    l3.grid(row=2, column=2)
+
+    scales_array = ['linear', 'log', 'symlog', 'logit', 'functionlog']
+    global x_scale
+    x_scale = StringVar(root)
+    x_scale.set("----")  # default value
+    w_x = OptionMenu(second_frame, x_scale, *scales_array)
+    w_x.config(width=20)
+    w_x.config(height=1)
+    w_x.config(bg='lightblue')
+    w_x.config(font=("Helvetica", 10))
+    w_x.grid(row=2, column=3, sticky='nesw')
 
     global x_lim_low
     x_lim_low = StringVar()
     l4 = Label(second_frame, fg='black', text="X Limit Lower", font=('Arial', 12, 'bold'), width=label_width,
                borderwidth=border_width, relief=label_relief, bg="lightblue")
-    l4.grid(row=2, column=2)
+    l4.grid(row=3, column=2)
     e4 = Entry(second_frame, fg='blue', textvariable=x_lim_low, font=('Arial', 12, 'bold'), width=label_width,
                borderwidth=border_width, relief=label_relief)
-    e4.grid(row=2, column=3)
+    e4.grid(row=3, column=3)
 
     global x_lim_upper
     x_lim_upper = StringVar()
     l5 = Label(second_frame, fg='black', text="X Limit Upper", font=('Arial', 12, 'bold'), width=label_width,
                borderwidth=border_width, relief=label_relief, bg="lightblue")
-    l5.grid(row=3, column=2)
+    l5.grid(row=4, column=2)
     e6 = Entry(second_frame, fg='blue', textvariable=x_lim_upper, font=('Arial', 12, 'bold'), width=label_width,
                borderwidth=border_width, relief=label_relief)
-    e6.grid(row=3, column=3)
+    e6.grid(row=4, column=3)
 
-    global x_scale
-    x_scale = StringVar()
-    l3 = Label(second_frame, fg='black', text="X Scale Type", font=('Arial', 12, 'bold'), width=label_width,
-               borderwidth=border_width, relief=label_relief, bg="lightblue")
-    l3.grid(row=4, column=2)
-    e3 = Entry(second_frame, fg='blue', textvariable=x_scale, font=('Arial', 12, 'bold'), width=label_width,
-               borderwidth=border_width, relief=label_relief)
-    e3.grid(row=4, column=3)
 
     global x_lable
     x_lable = StringVar()
@@ -207,32 +213,37 @@ def loadRawDataUser():
     button.grid(row=1, column=6, columnspan=1,sticky='nesw')
 
     #Plot Parameters Entry Labels
+
+    l3 = Label(second_frame, fg='black', text="Y Scale Type", font=('Arial', 12, 'bold'), width=label_width,
+               borderwidth=border_width, relief=label_relief, bg="lightblue")
+    l3.grid(row=2, column=5)
+    global y_scale
+    y_scale = StringVar(root)
+    y_scale.set("----")  # default value
+    w_x = OptionMenu(second_frame, y_scale, *scales_array)
+    w_x.config(width=20)
+    w_x.config(height=1)
+    w_x.config(bg='lightblue')
+    w_x.config(font=("Helvetica", 10))
+    w_x.grid(row=2, column=6, sticky='nesw')
+
     global y_lim_low
     y_lim_low = StringVar()
     l1 = Label(second_frame, fg='black', text="Y Limit Lower", font=('Arial', 12, 'bold'), width=label_width,
                 borderwidth=border_width, relief=label_relief, bg="lightblue")
-    l1.grid(row=2, column=5)
+    l1.grid(row=3, column=5)
     e1 = Entry(second_frame, fg='blue', textvariable=y_lim_low, font=('Arial', 12, 'bold'), width=label_width,
                borderwidth=border_width, relief=label_relief)
-    e1.grid(row=2, column=6)
+    e1.grid(row=3, column=6)
 
     global y_lim_upper
     y_lim_upper = StringVar()
     l2 = Label(second_frame, fg='black', text="Y Limit Upper", font=('Arial', 12, 'bold'), width=label_width,
                borderwidth=border_width, relief=label_relief, bg="lightblue")
-    l2.grid(row=3, column=5)
+    l2.grid(row=4, column=5)
     e2 = Entry(second_frame, fg='blue', textvariable=y_lim_upper, font=('Arial', 12, 'bold'), width=label_width,
                borderwidth=border_width, relief=label_relief)
-    e2.grid(row=3, column=6)
-
-    global y_scale
-    y_scale = StringVar()
-    l3 = Label(second_frame, fg='black', text="Y Scale Type", font=('Arial', 12, 'bold'), width=label_width,
-               borderwidth=border_width, relief=label_relief, bg="lightblue")
-    l3.grid(row=4, column=5)
-    e3 = Entry(second_frame, fg='blue', textvariable=y_scale, font=('Arial', 12, 'bold'), width=label_width,
-               borderwidth=border_width, relief=label_relief)
-    e3.grid(row=4, column=6)
+    e2.grid(row=4, column=6)
 
     global y_lable
     y_lable = StringVar()
@@ -261,34 +272,64 @@ def loadRawDataUser():
                  borderwidth=border_width, relief=label_relief)
     e911.grid(row=7, column=6)
 
-    global plot_type
-    plot_type = StringVar()
-    l7 = Label(second_frame, fg='black', text="Select Plot Type", font=('Arial', 12, 'bold'), width=15,
+    l7 = Label(second_frame, fg='black', text="Plot Type", font=('Arial', 12, 'bold'), width=15,
                borderwidth=border_width, relief=label_relief, bg="lightblue")
     l7.grid(row=5, column=0, sticky='nesw')
-    e8 = Entry(second_frame, fg='blue', textvariable=plot_type, font=('Arial', 12, 'bold'), width=15,
+
+    global plot_type
+    plot_type_array = ['line','scatter']
+    plot_type = StringVar(root)
+    plot_type.set("----")  # default value
+    w_x = OptionMenu(second_frame, plot_type, *plot_type_array)
+    w_x.config(width=20)
+    w_x.config(height=1)
+    w_x.config(bg='lightblue')
+    w_x.config(font=("Helvetica", 10))
+    w_x.grid(row=5, column=1, sticky='nesw')
+
+    lc = Label(second_frame, fg='black', text="Plot Color", font=('Arial', 12, 'bold'), width=15,
+               borderwidth=border_width, relief=label_relief, bg="lightblue")
+    lc.grid(row=6, column=0, sticky='nesw')
+
+    global plot_color
+    plot_color = StringVar(root)
+    plot_color_array = ['black', 'blue','red','green','yellow','cyan','magenta']
+    plot_color.set("----")  # default value
+    w_x = OptionMenu(second_frame, plot_color, *plot_color_array)
+    w_x.config(width=20)
+    w_x.config(height=1)
+    w_x.config(bg='lightblue')
+    w_x.config(font=("Helvetica", 10))
+    w_x.grid(row=6, column=1, sticky='nesw')
+
+    global plot_legend
+    plot_legend = StringVar()
+    lc = Label(second_frame, fg='black', text="Plot Legend", font=('Arial', 12, 'bold'), width=15,
+               borderwidth=border_width, relief=label_relief, bg="lightblue")
+    lc.grid(row=7, column=0, sticky='nesw')
+    ec = Entry(second_frame, fg='blue', textvariable=plot_legend, font=('Arial', 12, 'bold'), width=15,
                borderwidth=border_width, relief=label_relief)
-    e8.grid(row=5, column=1, sticky='nesw')
+    ec.grid(row=7, column=1, sticky='nesw')
 
     textlabel = Label(second_frame,
                       text="Instructions for Plotting:\n"
-                           "1. Select plot type ('line' or 'scatter')\n"
-                           "2. Select X-axis and Y-axis plotting variable \n"
-                           "3. Select X and Y-axis lower and upper limits \n"
-                           "4. Select X and Y-axis scale type ('linear','log',\n"
-                           "'symlog','logit','function','functionlog' \n"
-                           "5. Press Plot\n"
-                           "Plot will be generated",
+                           "1. Select Plot Parameters\n"
+                           "2. If netCDF variable as only 1 Dimension,\n"
+                           "enter 'NA' in Dimension-2\n"
+                           "3. Enter ':' in Dimension for entire array \n"
+                           "Press Plot Button to generate Plot",
                       font=("Helvetica", 12), bg="lightblue",borderwidth=border_width, relief=label_relief, justify="left", fg="black")
 
-    textlabel.grid(row=0, column=0, rowspan=5, columnspan=2)
+    textlabel.grid(row=0, column=0, rowspan=5, columnspan=2,sticky='nesw')
 
     # Plot Button
-    button = Button(second_frame, width=7, height=2, text="PLOT", command=generatePlot, font=("Helvetica", 12),
+    button = Button(second_frame, width=6, height=2, text="PLOT", command=generatePlot, font=("Helvetica", 12),
                     bg='#58F')
-    button.grid(row=0, column=8, rowspan=6, sticky='nesw')
+    button.grid(row=0, column=8, rowspan=8, sticky='nesw')
 
     mainloop()
+
+
 
 def generatePlot():
     # Plotting Spectrum
@@ -328,10 +369,15 @@ def generatePlot():
     plt.yscale(str(y_scale.get()))
     plt.ylabel(str(y_lable.get()))
 
+    color_code_array = [['black','k'], ['blue','b'],['red','k'],['green','g'],['yellow','y'],['cyan','c'],['magenta','m']]
+    for i in range(len(color_code_array)):
+        if(str(plot_color.get())==color_code_array[i][0]):
+            plot_color_selected = color_code_array[i][1]
+            break
     if(plot_type.get()=="line"):
-        plt.plot(x_plot, y_plot, color='b')
+        plt.plot(x_plot, y_plot, color=plot_color_selected, label=str(plot_legend.get()))
     elif (plot_type.get() == "scatter"):
-        plt.scatter(x_plot, y_plot, color='b')
+        plt.scatter(x_plot, y_plot, color=plot_color_selected, label=str(plot_legend.get()))
     #plt.suptitle('DAXSS Plot')
     plt.legend()
     plt.show()

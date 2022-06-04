@@ -1,6 +1,7 @@
 # Python Program to view Level-1 DAXSS netCDF files
 import netCDF4 as nc
 import matplotlib.pyplot as plt
+import julian
 
 # Path to Level-1 File
 daxss_level1_file_path = 'C:/Users/278an/Desktop/science_analysis/301_Data/DAXSS/level1/daxss_solarSXR_level1_2022-02-14-mission_v1.0.0.ncdf'
