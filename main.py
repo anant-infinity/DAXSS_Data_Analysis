@@ -1,7 +1,7 @@
 # Python Program to view Level-1 DAXSS netCDF files
 import netCDF4 as nc
 import matplotlib.pyplot as plt
-import julian
+from jdcal import jd2gcal
 
 # Path to Level-1 File
 daxss_level1_file_path = 'C:/Users/278an/Desktop/science_analysis/301_Data/DAXSS/level1/daxss_solarSXR_level1_2022-02-14-mission_v1.0.0.ncdf'
@@ -17,8 +17,8 @@ metadata_info_dict = daxsslevel1.__dict__
 #print (metadata_info_dict['TITLE'])
 
 # Accessing metadata of the dimensions
-for dim in daxsslevel1.dimensions.values():
-    print(dim)
+#for dim in daxsslevel1.dimensions.values():
+#    print(dim)
 
 # Accessing metadata of the variables
 var_array = []
@@ -64,3 +64,4 @@ plt.suptitle("DAXSS Example Spectra ")
 plt.legend()
 plt.show()
 
+jd2gcal(2000,1,1)

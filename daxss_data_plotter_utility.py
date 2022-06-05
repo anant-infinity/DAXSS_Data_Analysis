@@ -2,10 +2,9 @@ from tkinter import filedialog
 from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
-from pandas import DataFrame
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import netCDF4 as nc
+import datetime
 
 LARGE_FONT= ("Verdana", 12)
 NORM_FONT= ("Verdana", 10)
@@ -75,7 +74,6 @@ def printMetaDataY():
             text.insert(END, var_array[i])
 
     scrollbar_y.config(command=text.yview)
-
 
 def loadRawDataUser():
     global daxsslevel1
@@ -325,11 +323,14 @@ def loadRawDataUser():
     # Plot Button
     button = Button(second_frame, width=6, height=2, text="PLOT", command=generatePlot, font=("Helvetica", 12),
                     bg='#58F')
-    button.grid(row=0, column=8, rowspan=8, sticky='nesw')
+    button.grid(row=0, column=8, rowspan=6, sticky='nesw')
+
+    # Plot vs Array Index Button
+    button_2 = Button(second_frame, width=6, height=2, text="PLOT\n(vs Index)", command=generatePlotArrayIndex, font=("Helvetica", 8),
+                    bg='#58F')
+    button_2.grid(row=6, column=8, rowspan=2, sticky='nesw')
 
     mainloop()
-
-
 
 def generatePlot():
     # Plotting Spectrum
@@ -369,24 +370,91 @@ def generatePlot():
     plt.yscale(str(y_scale.get()))
     plt.ylabel(str(y_lable.get()))
 
-    color_code_array = [['black','k'], ['blue','b'],['red','k'],['green','g'],['yellow','y'],['cyan','c'],['magenta','m']]
+    color_code_array = [['black','k'], ['blue','b'],['red','r'],['green','g'],['yellow','y'],['cyan','c'],['magenta','m']]
+    chosen_plot_color = 'k'
+    plot_color_selected = str(plot_color.get())
     for i in range(len(color_code_array)):
-        if(str(plot_color.get())==color_code_array[i][0]):
-            plot_color_selected = color_code_array[i][1]
+        if(color_code_array[i][0] == plot_color_selected):
+            chosen_plot_color = color_code_array[i][1]
             break
     if(plot_type.get()=="line"):
-        plt.plot(x_plot, y_plot, color=plot_color_selected, label=str(plot_legend.get()))
+        plt.plot(x_plot, y_plot, color=chosen_plot_color, label=str(plot_legend.get()))
     elif (plot_type.get() == "scatter"):
-        plt.scatter(x_plot, y_plot, color=plot_color_selected, label=str(plot_legend.get()))
+        plt.scatter(x_plot, y_plot, color=chosen_plot_color, label=str(plot_legend.get()))
     #plt.suptitle('DAXSS Plot')
     plt.legend()
     plt.show()
+
+def generatePlotArrayIndex():
+
+    # Y axis plot parameters
+    plot_variable_y = variable_y.get()
+    if (y_dim_2.get() == 'NA'):
+        if (y_dim_1.get() == ':'):
+            y_plot = daxsslevel1[plot_variable_y][0, :]
+        else:
+            y_plot = daxsslevel1[plot_variable_y][0, int(y_dim_1.get())]
+    else:
+        if (y_dim_2.get() == ':'):
+            y_plot = daxsslevel1[plot_variable_y][0, int(y_dim_1.get()), :]
+        else:
+            y_plot = daxsslevel1[plot_variable_y][0, int(y_dim_1.get()), int(y_dim_2.get())]
+
+    plt.ylim([float(y_lim_low.get()), float(y_lim_upper.get())])
+    plt.yscale(str(y_scale.get()))
+    plt.ylabel(str(y_lable.get()))
+
+    color_code_array = [['black', 'k'], ['blue', 'b'], ['red', 'r'], ['green', 'g'], ['yellow', 'y'], ['cyan', 'c'],
+                        ['magenta', 'm']]
+
+    chosen_plot_color = 'k'
+    plot_color_selected = str(plot_color.get())
+    for i in range(len(color_code_array)):
+        if (color_code_array[i][0] == plot_color_selected):
+            chosen_plot_color = color_code_array[i][1]
+            break
+
+    x_plot=[]
+    for i in range(0,len(y_plot)):
+        x_plot.append(i)
+    if (plot_type.get() == "line"):
+        plt.plot(x_plot, y_plot, color=chosen_plot_color, label=str(plot_legend.get()))
+    elif (plot_type.get() == "scatter"):
+        plt.scatter(x_plot, y_plot, color=chosen_plot_color, label=str(plot_legend.get()))
+    # plt.suptitle('DAXSS Plot')
+    plt.legend()
+    plt.show()
+
+# create about page
+def aboutMenu():
+	child1_window=Toplevel(root)
+	child1_window.geometry("800x600")
+	child1_window.title("About: DAXSS Data Plotter Utility")
+	child1_window.configure(background = "#004e92")
+	child1_label2 = Label(child1_window, text="The Dual-zone Aperture X-ray Solar Spectrometer (DAXSS) is an instrument on-board the INSPIRESat-1 small satellite,\n"
+                                             "launched on 14th February 2022. This tool can generate plots from the DAXSS Level-1 netCDF file.\n"
+                                             "The tool can also be used to plot data from any other netCDF file.", font = ("Times",12), bg = "#004e92", justify = "center", fg = "white")
+	child1_label2.pack(padx=10, pady=20)
+	child1_label4 = Label(child1_window, text="\nThe main features of this tool are:", font = ("Times",12,"bold"), bg = "#004e92", justify = "right", fg = "white")
+	child1_label4.pack()
+	child1_label6 = Label(child1_window, text="1. A netCDF file can be selected using the 'Select DAXSS Level-1 netCDF file' button in the menu bar\n"
+                                             "2. Various plot parameters can be set using the GUI of the tool\n"
+                                             "3. The 'Plot' Button generates a plot of the selected Y-variable vs X-variable\n"
+                                             "4. The 'Plot (vs Index)' Button generates a plot of the selected Y-variable vs its Array Index\n"
+                                             "5. Multiple Y-Variables can be plotted in the same window, by pressing the plot button each time after selecting a new variable\n"
+                                             "\n", font = ("Times",12), bg = "#004e92", justify = "left", fg = "white")
+	child1_label6.pack(padx=10, pady=10)
+	child1_label7 = Label(child1_window, text="DAXSS/MinXSS PI is Dr. Thomas N. Woods\nDAXSS Plotter Utility created by Anant Kumar T K\n"
+                                             "For more information visit: https://lasp.colorado.edu/home/minxss/\n"
+                                             "DAXSS Data Plotter Utility: https://github.com/anant-infinity/DAXSS_Data_Analysis", font = ("Times",12), bg = "#004e92", justify = "center", fg = "white")
+	child1_label7.pack(padx=10, pady=10)
 
 root = Tk()
 root.title("DAXSS Data Plotter")
 menu = Menu(root)
 root.config(menu=menu)
 menu.add_command(label="Select DAXSS Level-1 netCDF file", command=loadRawDataUser)
+menu.add_command(label="About", command=aboutMenu)
 #filemenu.add_command(label="Download netCDF file", command=testPlot)
 
 bg = ImageTk.PhotoImage(Image.open("images/background3.jpg").resize((1200,200), Image.ANTIALIAS))
