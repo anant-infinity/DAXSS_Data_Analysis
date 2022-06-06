@@ -4,22 +4,18 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 import netCDF4 as nc
-import datetime
 
-LARGE_FONT= ("Verdana", 12)
-NORM_FONT= ("Verdana", 10)
-SMALL_FONT= ("Verdana", 8)
+# GUI Font definitions
+LARGE_FONT = ("Verdana", 12)
+NORM_FONT = ("Verdana", 10)
+SMALL_FONT = ("Verdana", 8)
 
-def popupmsg(title, msg):
-    popup = Tk()
-    popup.wm_title(title)
-    label = ttk.Label(popup, text=msg, font=NORM_FONT)
-    label.pack(side="top", fill="x", pady=10)
-    B1 = ttk.Button(popup, text="Okay", command = popup.destroy)
-    B1.pack()
-    popup.mainloop()
 
 def printMetaDataX():
+    """
+        Prints the metadata of the X-axis netCDF4 variable in a new window.
+        :return: None
+    """
     child_window = Toplevel(root)
     child_window.geometry("900x450")
     child_window.title("X-axis Variable Meta Data")
@@ -47,7 +43,12 @@ def printMetaDataX():
 
     scrollbar_y.config(command=text.yview)
 
+
 def printMetaDataY():
+    """
+        Prints the metadata of the Y-axis netCDF4 variable in a new window.
+        :return: None
+    """
     child_window = Toplevel(root)
     child_window.geometry("900x450")
     child_window.title("Y-axis Variable Meta Data")
@@ -75,11 +76,16 @@ def printMetaDataY():
 
     scrollbar_y.config(command=text.yview)
 
+
 def loadRawDataUser():
+    """
+            Loads the netCDF4 file for plotting and creates the main GUI window for setting plot parameters.
+            This function is called when the user presses the "Select DAXSS Level-1 netCDF file" button.
+            :return: None
+    """
     global daxsslevel1
     global level_1_var_list
-    #root = Tk()
-    #root.withdraw()
+
     daxss_level1_file_path = filedialog.askopenfilename()
     daxsslevel1 = nc.Dataset(daxss_level1_file_path)
     level_1_var_list = list(daxsslevel1.variables)
@@ -333,20 +339,26 @@ def loadRawDataUser():
     mainloop()
 
 def generatePlot():
+    """
+        Generates a plot of the Y-variable vs the X-variable, with the parameters set by the user.
+        This function is called when the user presses the Plot button.
+        :return: None
+    """
+
     # Plotting Spectrum
     # X-axis plot parameters
     plot_variable_x = variable_x.get()
 
     if (x_dim_2.get() == 'NA'):
         if(x_dim_1.get() == ':'):
-            x_plot = daxsslevel1[plot_variable_x][0, :]
+            x_plot = daxsslevel1[plot_variable_x][:]
         else:
-            x_plot = daxsslevel1[plot_variable_x][0, int(x_dim_1.get())]
+            x_plot = daxsslevel1[plot_variable_x][int(x_dim_1.get())]
     else:
         if (x_dim_2.get() == ':'):
-            x_plot = daxsslevel1[plot_variable_x][0, int(x_dim_1.get()), :]
+            x_plot = daxsslevel1[plot_variable_x][int(x_dim_1.get()), :]
         else:
-            x_plot = daxsslevel1[plot_variable_x][0, int(x_dim_1.get()), int(x_dim_2.get())]
+            x_plot = daxsslevel1[plot_variable_x][int(x_dim_1.get()), int(x_dim_2.get())]
 
     plt.xlim([float(x_lim_low.get()), float(x_lim_upper.get())])
     plt.xscale(str(x_scale.get()))
@@ -356,14 +368,14 @@ def generatePlot():
     plot_variable_y = variable_y.get()
     if (y_dim_2.get() == 'NA'):
         if(y_dim_1.get() == ':'):
-            y_plot = daxsslevel1[plot_variable_y][0, :]
+            y_plot = daxsslevel1[plot_variable_y][:]
         else:
-            y_plot = daxsslevel1[plot_variable_y][0, int(y_dim_1.get())]
+            y_plot = daxsslevel1[plot_variable_y][int(y_dim_1.get())]
     else:
         if (y_dim_2.get() == ':'):
-            y_plot = daxsslevel1[plot_variable_y][0, int(y_dim_1.get()), :]
+            y_plot = daxsslevel1[plot_variable_y][int(y_dim_1.get()), :]
         else:
-            y_plot = daxsslevel1[plot_variable_y][0, int(y_dim_1.get()), int(y_dim_2.get())]
+            y_plot = daxsslevel1[plot_variable_y][int(y_dim_1.get()), int(y_dim_2.get())]
 
 
     plt.ylim([float(y_lim_low.get()), float(y_lim_upper.get())])
@@ -386,19 +398,24 @@ def generatePlot():
     plt.show()
 
 def generatePlotArrayIndex():
+    """
+        Generates a plot of the Y-variable vs its array index, with the parameters set by the user.
+        This function is called when the user presses the Plot (vs index) button.
+        :return: None
+    """
 
     # Y axis plot parameters
     plot_variable_y = variable_y.get()
     if (y_dim_2.get() == 'NA'):
         if (y_dim_1.get() == ':'):
-            y_plot = daxsslevel1[plot_variable_y][0, :]
+            y_plot = daxsslevel1[plot_variable_y][:]
         else:
-            y_plot = daxsslevel1[plot_variable_y][0, int(y_dim_1.get())]
+            y_plot = daxsslevel1[plot_variable_y][int(y_dim_1.get())]
     else:
         if (y_dim_2.get() == ':'):
-            y_plot = daxsslevel1[plot_variable_y][0, int(y_dim_1.get()), :]
+            y_plot = daxsslevel1[plot_variable_y][int(y_dim_1.get()), :]
         else:
-            y_plot = daxsslevel1[plot_variable_y][0, int(y_dim_1.get()), int(y_dim_2.get())]
+            y_plot = daxsslevel1[plot_variable_y][int(y_dim_1.get()), int(y_dim_2.get())]
 
     plt.ylim([float(y_lim_low.get()), float(y_lim_upper.get())])
     plt.yscale(str(y_scale.get()))
@@ -425,29 +442,45 @@ def generatePlotArrayIndex():
     plt.legend()
     plt.show()
 
-# create about page
+
 def aboutMenu():
-	child1_window=Toplevel(root)
-	child1_window.geometry("800x600")
-	child1_window.title("About: DAXSS Data Plotter Utility")
-	child1_window.configure(background = "#004e92")
-	child1_label2 = Label(child1_window, text="The Dual-zone Aperture X-ray Solar Spectrometer (DAXSS) is an instrument on-board the INSPIRESat-1 small satellite,\n"
-                                             "launched on 14th February 2022. This tool can generate plots from the DAXSS Level-1 netCDF file.\n"
-                                             "The tool can also be used to plot data from any other netCDF file.", font = ("Times",12), bg = "#004e92", justify = "center", fg = "white")
-	child1_label2.pack(padx=10, pady=20)
-	child1_label4 = Label(child1_window, text="\nThe main features of this tool are:", font = ("Times",12,"bold"), bg = "#004e92", justify = "right", fg = "white")
-	child1_label4.pack()
-	child1_label6 = Label(child1_window, text="1. A netCDF file can be selected using the 'Select DAXSS Level-1 netCDF file' button in the menu bar\n"
-                                             "2. Various plot parameters can be set using the GUI of the tool\n"
-                                             "3. The 'Plot' Button generates a plot of the selected Y-variable vs X-variable\n"
-                                             "4. The 'Plot (vs Index)' Button generates a plot of the selected Y-variable vs its Array Index\n"
-                                             "5. Multiple Y-Variables can be plotted in the same window, by pressing the plot button each time after selecting a new variable\n"
-                                             "\n", font = ("Times",12), bg = "#004e92", justify = "left", fg = "white")
-	child1_label6.pack(padx=10, pady=10)
-	child1_label7 = Label(child1_window, text="DAXSS/MinXSS PI: Dr. Thomas N. Woods\nDAXSS Plotter Utility created by Anant Kumar T K\n"
-                                             "For more information visit: https://lasp.colorado.edu/home/minxss/\n"
-                                             "DAXSS Data Plotter Utility: https://github.com/anant-infinity/DAXSS_Data_Analysis", font = ("Times",12), bg = "#004e92", justify = "center", fg = "white")
-	child1_label7.pack(padx=10, pady=10)
+    """
+        Generates a window with information about the DAXSS Data Plotter Utility
+        :return: None
+    """
+    child1_window=Toplevel(root)
+    child1_window.geometry("800x600")
+    child1_window.title("About: DAXSS Data Plotter Utility")
+    child1_window.configure(background = "#004e92")
+    child1_label2 = Label(child1_window, text="The Dual-zone Aperture X-ray Solar Spectrometer (DAXSS) is an "
+                                              "instrument on-board the INSPIRESat-1 small satellite,\n"
+                                              "launched on 14th February 2022. This tool can generate plots from "
+                                              "the DAXSS Level-1 netCDF file.\n"
+                                              "The tool can also be used to plot data from any other netCDF file.",
+                                              font = ("Times",12), bg = "#004e92", justify = "center", fg = "white")
+    child1_label2.pack(padx=10, pady=20)
+    child1_label4 = Label(child1_window, text="\nThe main features of this tool are:", font = ("Times",12,"bold"),
+                                              bg = "#004e92", justify = "right", fg = "white")
+    child1_label4.pack()
+    child1_label6 = Label(child1_window, text="1. A netCDF file can be selected using the 'Select DAXSS Level-1 netCDF"
+                                              " file' button in the menu bar\n"
+                                              "2. Various plot parameters can be set using the GUI of the tool\n"
+                                              "3. The 'Plot' Button generates a plot of the selected Y-variable "
+                                              "vs X-variable\n"
+                                              "4. The 'Plot (vs Index)' Button generates a plot of the selected "
+                                              "Y-variable vs its Array Index\n"
+                                              "5. Multiple Y-Variables can be plotted in the same window, "
+                                              "by pressing the plot button each time after selecting a new variable\n"
+                                              "\n", font = ("Times",12), bg = "#004e92", justify = "left", fg = "white")
+    child1_label6.pack(padx=10, pady=10)
+    child1_label7 = Label(child1_window, text="DAXSS/MinXSS PI: Dr. Thomas N. Woods\nDAXSS Plotter Utility created"
+                                              " by Anant Kumar T K\n"
+                                              "For more information visit: https://lasp.colorado.edu/home/minxss/\n"
+                                              "DAXSS Data Plotter Utility: "
+                                              "https://github.com/anant-infinity/DAXSS_Data_Analysis",
+                                              font = ("Times",12), bg = "#004e92", justify = "center", fg = "white")
+    child1_label7.pack(padx=10, pady=10)
+
 
 root = Tk()
 root.title("DAXSS Data Plotter")
@@ -455,33 +488,31 @@ menu = Menu(root)
 root.config(menu=menu)
 menu.add_command(label="Select DAXSS Level-1 netCDF file", command=loadRawDataUser)
 menu.add_command(label="About", command=aboutMenu)
-#filemenu.add_command(label="Download netCDF file", command=testPlot)
 
 bg = ImageTk.PhotoImage(Image.open("images/background3.jpg").resize((1200,200), Image.ANTIALIAS))
 daxss_icon = ImageTk.PhotoImage(Image.open("images/daxss_logo.PNG").resize((200,200), Image.ANTIALIAS))
 inspire_icon = ImageTk.PhotoImage(Image.open("images/Inspire-logo.jpg").resize((200,200), Image.ANTIALIAS))
 
-
-#create a label
+# create a label
 window_label = Label(root, image = bg)
 window_label.place(x=0, y=0)
 
-#create canvas
+# create a canvas
 my_canvas = Canvas(root, width = 1200, height = 200)
 my_canvas.pack(fill = "both", expand = True)
 
-#label to add DAXSS icon
+# label to add DAXSS icon
 isro_label = Label(root, image = daxss_icon, bd = 0, width = 200, height=200)
 isro_label_window = my_canvas.create_window(0, 0, anchor="nw", window = isro_label)
 
-#label to add INSPIRE icon
+# label to add INSPIRE icon
 astre_label = Label(root, image = inspire_icon, bd = 0, width = 200, height=200)
 astre_label_window = my_canvas.create_window(1000, 0, anchor="nw", window = astre_label)
 
-#set image in canvas
+# set image in canvas
 my_canvas.create_image(0,0, image=bg, anchor = "nw")
 
-#add a label project name
+# add a label project name
 my_canvas.create_text(600, 100, text = "DAXSS Data Plotter Utility", font = ("Helvetica",30), fill = "#b6d0cf")
 
 root.mainloop()
