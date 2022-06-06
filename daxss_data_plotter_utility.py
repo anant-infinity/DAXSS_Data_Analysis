@@ -444,7 +444,7 @@ def aboutMenu():
                                              "5. Multiple Y-Variables can be plotted in the same window, by pressing the plot button each time after selecting a new variable\n"
                                              "\n", font = ("Times",12), bg = "#004e92", justify = "left", fg = "white")
 	child1_label6.pack(padx=10, pady=10)
-	child1_label7 = Label(child1_window, text="DAXSS/MinXSS PI is Dr. Thomas N. Woods\nDAXSS Plotter Utility created by Anant Kumar T K\n"
+	child1_label7 = Label(child1_window, text="DAXSS/MinXSS PI: Dr. Thomas N. Woods\nDAXSS Plotter Utility created by Anant Kumar T K\n"
                                              "For more information visit: https://lasp.colorado.edu/home/minxss/\n"
                                              "DAXSS Data Plotter Utility: https://github.com/anant-infinity/DAXSS_Data_Analysis", font = ("Times",12), bg = "#004e92", justify = "center", fg = "white")
 	child1_label7.pack(padx=10, pady=10)
