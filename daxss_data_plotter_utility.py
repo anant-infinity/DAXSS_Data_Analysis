@@ -1,15 +1,29 @@
 from tkinter import filedialog
 from tkinter import *
-from tkinter import ttk
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 import netCDF4 as nc
+from astropy.io import fits
+from matplotlib.dates import date2num, DateFormatter
+from dateutil import parser
+from datetime import datetime, timedelta
+from sunpy.net import Fido, attrs as a
+import xarray
+import dask
 
 # GUI Font definitions
 LARGE_FONT = ("Verdana", 12)
 NORM_FONT = ("Verdana", 10)
 SMALL_FONT = ("Verdana", 8)
 
+def popupmsg(title, msg):
+    popup = Tk()
+    popup.wm_title(title)
+    label = Label(popup, text=msg, font=NORM_FONT)
+    label.pack(side="top", fill="x", pady=10)
+    B1 = Button(popup, text="Okay", command = popup.destroy)
+    B1.pack()
+    popup.mainloop()
 
 def printMetaDataX():
     """
@@ -43,7 +57,6 @@ def printMetaDataX():
 
     scrollbar_y.config(command=text.yview)
 
-
 def printMetaDataY():
     """
         Prints the metadata of the Y-axis netCDF4 variable in a new window.
@@ -75,7 +88,6 @@ def printMetaDataY():
             text.insert(END, var_array[i])
 
     scrollbar_y.config(command=text.yview)
-
 
 def loadRawDataUser():
     """
@@ -329,13 +341,23 @@ def loadRawDataUser():
     # Plot Button
     button = Button(second_frame, width=6, height=2, text="PLOT", command=generatePlot, font=("Helvetica", 12),
                     bg='#58F')
-    button.grid(row=0, column=8, rowspan=6, sticky='nesw')
+    button.grid(row=0, column=8, rowspan=2, sticky='nesw')
+
+    # Multiscale plot
+    button_2 = Button(second_frame, width=6, height=2, text="PLOT\n(multi Scale)", command=generateMultiScalePlot,
+                      font=("Helvetica", 8),
+                      bg='#58F')
+    button_2.grid(row=2, column=8, rowspan=2, sticky='nesw')
 
     # Plot vs Array Index Button
     button_2 = Button(second_frame, width=6, height=2, text="PLOT\n(vs Index)", command=generatePlotArrayIndex, font=("Helvetica", 8),
                     bg='#58F')
-    button_2.grid(row=6, column=8, rowspan=2, sticky='nesw')
+    button_2.grid(row=4, column=8, rowspan=2, sticky='nesw')
 
+    # Generate Fits File
+    button_2 = Button(second_frame, width=6, height=2, text="Generate\n(FITS File)", command=generateFITSFile,
+                      font=("Helvetica", 8),bg='#58F')
+    button_2.grid(row=6, column=8, rowspan=2, sticky='nesw')
     mainloop()
 
 def generatePlot():
@@ -442,6 +464,121 @@ def generatePlotArrayIndex():
     plt.legend()
     plt.show()
 
+def generateMultiScalePlot():
+    plt.rcParams["figure.figsize"] = [7.00, 3.50]
+    plt.rcParams["figure.autolayout"] = True
+
+    time_ISO = daxsslevel1['TIME_ISO'][:]
+    daxss_datetime_obj_array = []
+    for time_index in range(len(time_ISO)):
+        time_ISO_String = []
+        for var_index in range(0, 20):
+            time_str = time_ISO[time_index][var_index].decode("utf-8")
+            time_ISO_String.append(time_str)
+        daxss_datetime_obj_array.append(parser.parse(''.join(time_ISO_String)))
+
+    daxss_time = date2num(daxss_datetime_obj_array)
+    daxss_x123_slow_count = daxsslevel1['X123_SLOW_COUNT'][:]
+
+    # Path to Level-1 File
+    #goes_file_path = 'C:/Users/278an/Desktop/science_analysis/301_Data/GOES/goes_combined.nc'
+    goes_file_path = 'C:/Users/278an/Desktop/science_analysis/301_Data/GOES/Data_Since_Feb_2022/sci_xrsf-l2-flx1s_g16_d20220322_v2-1-0.nc'
+    # Import File as a netCDF Dataset
+    goes_data = nc.Dataset(goes_file_path)
+
+    goes_time_array = goes_data['time'][:]
+    base_date = datetime(2000, 1, 1, 12, 0, 0)
+    goes_datetime_obj_array = []
+    for i in range(len(goes_time_array)):
+        curr_time = base_date + timedelta(seconds=goes_time_array[i])
+        goes_datetime_obj_array.append(curr_time)
+
+    goes_time = date2num(goes_datetime_obj_array)
+    goes_flux_data = goes_data['xrsb_flux'][:]
+
+    fig, ax1 = plt.subplots()
+
+    ax1.plot_date(daxss_time, daxss_x123_slow_count, 'o--', color='red', label="DAXSS Slow Counts")
+    ax1.set_ylabel("DAXSS Slow Counts (Counts/sec)", color="red", fontsize=12)
+    ax2 = ax1.twinx()
+    ax2.plot_date(goes_time, goes_flux_data, 'o:', color='blue', label="GOES XRS-B Flux")
+    ax2.set_ylabel("GOES XRS-B Flux (W/m^2)", color="blue", fontsize=12)
+
+    ax1.xaxis.set_major_formatter(DateFormatter('%Y-%m-%d-%H-%M'))
+    ax1.tick_params(rotation=45)
+
+    plt.show()
+
+def generateFITSFile():
+    # Creating the FITS file for DAXSS
+    # Primary HDU - Header
+    hdr = fits.Header()
+    hdr['EXTNAME']  = 'SPECTRUM'
+    hdr['TELESCOP'] = "InspireSat-1"
+    hdr['INSTRUME'] = "DAXSS"
+    hdr['INSTRUME'] = "DAXSS"
+    hdr['FILTER']   = "Be/Kapton"
+    hdr['EXPOSURE'] = "9 seconds"
+    hdr['BACKFILE'] = "NA"
+    hdr['BACKSCAL'] = "0"
+    hdr['CORRFILE'] = "NA"
+    hdr['RESPFILE'] = "minxss_fm3_RMF_ARF.fits"
+    hdr['ANCRFILE'] = "minxss_fm3_RMF_ARF.fits"
+    hdr['AREASCAL'] = "1"
+    hdr['HDUCLASS'] = "OGIP"
+    hdr['HDUCLAS1'] = "SPECTRUM"
+    hdr['HDUVERS']  = "1.2.1"
+    hdr['POISSERR'] = "FALSE"
+    hdr['CHANTYPE'] = "PHA"
+    hdr['DETCHANS'] = "1000"
+
+    dummy_primary = fits.PrimaryHDU()
+    channel_number_array = []
+    quality_array = []
+    grouping_array = []
+    area_scaling_array = []
+    back_scaling_array = []
+    for i in range(1,1001,1):
+        channel_number_array.append(i)
+        quality_array.append(0)
+        grouping_array.append(0)
+        area_scaling_array.append(1)
+        back_scaling_array.append(1)
+    c1 = channel_number_array
+    c2 = daxsslevel1['SPECTRUM_CPS'][y_dim_1.get(),6:1006]
+    c3 = daxsslevel1['SPECTRUM_CPS_PRECISION'][y_dim_1.get(), 6:1006]
+    c4 = daxsslevel1['SPECTRUM_CPS_ACCURACY'][y_dim_1.get(), 6:1006]
+    c5 = quality_array
+    c6 = grouping_array
+    #c7 = area_scaling_array
+    #c8 = back_scaling_array
+
+    # Data
+    hdu_data = fits.BinTableHDU.from_columns(
+        [fits.Column(name='CHANNEL',    format='J', array=c1),
+         fits.Column(name='RATE',       format='J', array=c2),
+         fits.Column(name='STAT_ERR',   format='E', array=c3),
+         fits.Column(name='SYS_ERR',    format='E', array=c4),
+         fits.Column(name='QUALITY',    format='J', array=c5),
+         fits.Column(name='GROUPING',   format='J', array=c6),
+         fits.Column(name='AREASCAL',   format='J', array=c7),
+         fits.Column(name='BACKSCAL',   format='J', array=c8)], header=hdr)
+    # Creating and Storing the FITS File
+    hdul = fits.HDUList([dummy_primary, hdu_data])
+    hdul.writeto('minxss_fm3_PHA.fits', overwrite=True)
+
+    popupmsg("FITS File Generated", "Success! PHA FITS file generated")
+
+def downloadData():
+    # Searching for GOES XRS Data
+    #results = Fido.search(a.Time("2022-02-28 00:00", "2022-06-13 00:00"), a.Instrument("XRS"),
+    #                      a.goes.SatelliteNumber(16))
+    #print(results)
+
+    #downloaded_files = Fido.fetch(results, path='C:/Users/278an/Desktop/science_analysis/301_Data/GOES/Data_Since_Feb_2022/{file}')
+    ds = xarray.open_mfdataset('C:/Users/278an/Desktop/science_analysis/301_Data/GOES/Data_Since_Feb_2022/sci_xrsf-l2-flx1s_g16_*.nc',combine='nested', concat_dim="time")
+    ds.to_netcdf('C:/Users/278an/Desktop/science_analysis/301_Data/GOES/goes_combined.nc')
+    popupmsg("Files Downloaded", "Success! GOES Files Downloaded")
 
 def aboutMenu():
     """
@@ -482,16 +619,19 @@ def aboutMenu():
     child1_label7.pack(padx=10, pady=10)
 
 
+
 root = Tk()
 root.title("DAXSS Data Plotter")
 menu = Menu(root)
 root.config(menu=menu)
 menu.add_command(label="Select DAXSS Level-1 netCDF file", command=loadRawDataUser)
 menu.add_command(label="About", command=aboutMenu)
+menu.add_command(label="Download GOES Data", command=downloadData)
 
-bg = ImageTk.PhotoImage(Image.open("images/background3.jpg").resize((1200,200), Image.ANTIALIAS))
-daxss_icon = ImageTk.PhotoImage(Image.open("images/daxss_logo.PNG").resize((200,200), Image.ANTIALIAS))
-inspire_icon = ImageTk.PhotoImage(Image.open("images/Inspire-logo.jpg").resize((200,200), Image.ANTIALIAS))
+
+bg = ImageTk.PhotoImage(Image.open("daxss_plotter_utility_images/background.jpg").resize((1200,200), Image.ANTIALIAS))
+daxss_icon = ImageTk.PhotoImage(Image.open("daxss_plotter_utility_images/daxss_logo.PNG").resize((200,200), Image.ANTIALIAS))
+inspire_icon = ImageTk.PhotoImage(Image.open("daxss_plotter_utility_images/inspire_logo.jpg").resize((200,200), Image.ANTIALIAS))
 
 # create a label
 window_label = Label(root, image = bg)
@@ -502,12 +642,12 @@ my_canvas = Canvas(root, width = 1200, height = 200)
 my_canvas.pack(fill = "both", expand = True)
 
 # label to add DAXSS icon
-isro_label = Label(root, image = daxss_icon, bd = 0, width = 200, height=200)
-isro_label_window = my_canvas.create_window(0, 0, anchor="nw", window = isro_label)
+daxss_label = Label(root, image = daxss_icon, bd = 0, width = 200, height=200)
+isro_label_window = my_canvas.create_window(0, 0, anchor="nw", window = daxss_label)
 
 # label to add INSPIRE icon
-astre_label = Label(root, image = inspire_icon, bd = 0, width = 200, height=200)
-astre_label_window = my_canvas.create_window(1000, 0, anchor="nw", window = astre_label)
+inspire_label = Label(root, image = inspire_icon, bd = 0, width = 200, height=200)
+astre_label_window = my_canvas.create_window(1000, 0, anchor="nw", window = inspire_label)
 
 # set image in canvas
 my_canvas.create_image(0,0, image=bg, anchor = "nw")
