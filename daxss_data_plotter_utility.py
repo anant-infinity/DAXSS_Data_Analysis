@@ -7,6 +7,7 @@ from astropy.io import fits
 from matplotlib.dates import date2num, DateFormatter
 from dateutil import parser
 from datetime import datetime, timedelta
+import numpy as np
 from sunpy.net import Fido, attrs as a
 import xarray
 import dask
@@ -481,8 +482,8 @@ def generateMultiScalePlot():
     daxss_x123_slow_count = daxsslevel1['X123_SLOW_COUNT'][:]
 
     # Path to Level-1 File
-    #goes_file_path = 'C:/Users/278an/Desktop/science_analysis/301_Data/GOES/goes_combined.nc'
-    goes_file_path = 'C:/Users/278an/Desktop/science_analysis/301_Data/GOES/Data_Since_Feb_2022/sci_xrsf-l2-flx1s_g16_d20220322_v2-1-0.nc'
+    #goes_file_path = 'Input_Files/GOES/goes_combined.nc'
+    goes_file_path = 'Input_Files/GOES/Data_Since_Feb_2022/sci_xrsf-l2-flx1s_g16_d20220322_v2-1-0.nc'
     # Import File as a netCDF Dataset
     goes_data = nc.Dataset(goes_file_path)
 
@@ -520,53 +521,51 @@ def generateFITSFile():
     hdr['FILTER']   = "Be/Kapton"
     hdr['EXPOSURE'] = "9 seconds"
     hdr['BACKFILE'] = "NA"
-    hdr['BACKSCAL'] = "0"
+    hdr['BACKSCAL'] = "1.0"
     hdr['CORRFILE'] = "NA"
-    hdr['RESPFILE'] = "minxss_fm3_RMF_ARF.fits"
-    hdr['ANCRFILE'] = "minxss_fm3_RMF_ARF.fits"
-    hdr['AREASCAL'] = "1"
+    hdr['RESPFILE'] = "minxss_fm3_RMF.fits"
+    hdr['ANCRFILE'] = "minxss_fm3_ARF.fits"
+    hdr['AREASCAL'] = "1.0"
     hdr['HDUCLASS'] = "OGIP"
     hdr['HDUCLAS1'] = "SPECTRUM"
     hdr['HDUVERS']  = "1.2.1"
-    hdr['POISSERR'] = "FALSE"
+    hdr['POISSERR'] = "F"
     hdr['CHANTYPE'] = "PHA"
     hdr['DETCHANS'] = "1000"
 
-    dummy_primary = fits.PrimaryHDU()
+    dummy_primary = fits.PrimaryHDU(header=hdr)
     channel_number_array = []
     quality_array = []
-    grouping_array = []
-    area_scaling_array = []
-    back_scaling_array = []
+    systematic_error_array = []
     for i in range(1,1001,1):
-        channel_number_array.append(i)
-        quality_array.append(0)
-        grouping_array.append(0)
-        area_scaling_array.append(1)
-        back_scaling_array.append(1)
+        channel_number_array.append(np.int32(i))
+        quality_array.append(np.int16(1) - np.int16(daxsslevel1['VALID_FLAG'][y_dim_1.get(),i+5]))
+        systematic_error_array.append(np.float32(daxsslevel1['SPECTRUM_CPS_ACCURACY'][y_dim_1.get(), i+5]/daxsslevel1['SPECTRUM_CPS'][y_dim_1.get(),i+5]))
+
     c1 = channel_number_array
     c2 = daxsslevel1['SPECTRUM_CPS'][y_dim_1.get(),6:1006]
-    c3 = daxsslevel1['SPECTRUM_CPS_PRECISION'][y_dim_1.get(), 6:1006]
-    c4 = daxsslevel1['SPECTRUM_CPS_ACCURACY'][y_dim_1.get(), 6:1006]
+    c3 = daxsslevel1['SPECTRUM_CPS_PRECISION'][y_dim_1.get(), 6:1006] # Precision = Statitical Error
+    c4 = systematic_error_array  # Accuracy = Systematic Error
     c5 = quality_array
-    c6 = grouping_array
-    #c7 = area_scaling_array
-    #c8 = back_scaling_array
 
+    print(type(systematic_error_array[0]))
     # Data
     hdu_data = fits.BinTableHDU.from_columns(
         [fits.Column(name='CHANNEL',    format='J', array=c1),
-         fits.Column(name='RATE',       format='J', array=c2),
+         fits.Column(name='RATE',       format='E', array=c2),
          fits.Column(name='STAT_ERR',   format='E', array=c3),
          fits.Column(name='SYS_ERR',    format='E', array=c4),
-         fits.Column(name='QUALITY',    format='J', array=c5),
-         fits.Column(name='GROUPING',   format='J', array=c6),
-         fits.Column(name='AREASCAL',   format='J', array=c7),
-         fits.Column(name='BACKSCAL',   format='J', array=c8)], header=hdr)
+         fits.Column(name='QUALITY',    format='J', array=c5)], header=hdr)
     # Creating and Storing the FITS File
     hdul = fits.HDUList([dummy_primary, hdu_data])
-    hdul.writeto('minxss_fm3_PHA.fits', overwrite=True)
 
+    time_ISO_String = []
+    for var_index in range(0, 20):
+        time_str = daxsslevel1['TIME_ISO'][int(y_dim_1.get())][var_index].decode("utf-8")
+        time_ISO_String.append(time_str)
+
+    filename = 'Output_Files/minxss_fm3_PHA_'+''.join(time_ISO_String).replace(':', '-')+'.PHA'
+    hdul.writeto(filename, overwrite=True)
     popupmsg("FITS File Generated", "Success! PHA FITS file generated")
 
 def downloadData():
@@ -575,9 +574,9 @@ def downloadData():
     #                      a.goes.SatelliteNumber(16))
     #print(results)
 
-    #downloaded_files = Fido.fetch(results, path='C:/Users/278an/Desktop/science_analysis/301_Data/GOES/Data_Since_Feb_2022/{file}')
-    ds = xarray.open_mfdataset('C:/Users/278an/Desktop/science_analysis/301_Data/GOES/Data_Since_Feb_2022/sci_xrsf-l2-flx1s_g16_*.nc',combine='nested', concat_dim="time")
-    ds.to_netcdf('C:/Users/278an/Desktop/science_analysis/301_Data/GOES/goes_combined.nc')
+    #downloaded_files = Fido.fetch(results, path='Input_Files/GOES/Data_Since_Feb_2022/{file}')
+    ds = xarray.open_mfdataset('Input_Files/GOES/Data_Since_Feb_2022/sci_xrsf-l2-flx1s_g16_*.nc',combine='nested', concat_dim="time")
+    ds.to_netcdf('Input_Files/GOES/goes_combined.nc')
     popupmsg("Files Downloaded", "Success! GOES Files Downloaded")
 
 def aboutMenu():
