@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 import numpy as np
 from sunpy.net import Fido, attrs as a
 import xarray
-import dask
 
 # GUI Font definitions
 LARGE_FONT = ("Verdana", 12)
