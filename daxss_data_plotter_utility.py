@@ -513,58 +513,87 @@ def generateMultiScalePlot():
 def generateFITSFile():
     # Creating the FITS file for DAXSS
     # Primary HDU - Header
-    hdr = fits.Header()
-    hdr['EXTNAME']  = 'SPECTRUM'
-    hdr['TELESCOP'] = "InspireSat-1"
-    hdr['INSTRUME'] = "DAXSS"
-    hdr['INSTRUME'] = "DAXSS"
-    hdr['FILTER']   = "Be/Kapton"
-    hdr['EXPOSURE'] = "9 seconds"
-    hdr['BACKFILE'] = "NA"
-    hdr['BACKSCAL'] = "1.0"
-    hdr['CORRFILE'] = "NA"
-    hdr['RESPFILE'] = "minxss_fm3_RMF.fits"
-    hdr['ANCRFILE'] = "minxss_fm3_ARF.fits"
-    hdr['AREASCAL'] = "1.0"
-    hdr['HDUCLASS'] = "OGIP"
-    hdr['HDUCLAS1'] = "SPECTRUM"
-    hdr['HDUVERS']  = "1.2.1"
-    hdr['POISSERR'] = "F"
-    hdr['CHANTYPE'] = "PHA"
-    hdr['DETCHANS'] = "1000"
+    hdr_dummy = fits.Header()
+    hdr_data = fits.Header()
+    hdr_dummy['MISSION'] = "InspireSat-1"
+    hdr_dummy['TELESCOP'] = "InspireSat-1"
+    hdr_dummy['INSTRUME'] = "DAXSS"
+    hdr_dummy['ORIGIN'] = "LASP"
+    hdr_dummy['CREATOR'] = "DAXSSPlotterUtility_v1"
+    hdr_dummy['CONTENT'] = "Type-I PHA file"
 
-    dummy_primary = fits.PrimaryHDU(header=hdr)
+    #Data Header
+    hdr_data['MISSION'] = "InspireSat-1"
+    hdr_data['TELESCOP'] = "InspireSat-1"
+    hdr_data['INSTRUME'] = "DAXSS"
+    hdr_data['ORIGIN'] = "LASP"
+    hdr_data['CREATOR'] = "DAXSSPlotterUtility_v1"
+    hdr_data['CONTENT'] = "SPECTRUM"
+    hdr_data['HDUCLASS'] = "OGIP"
+    hdr_data['LONGSTRN'] = "OGIP 1.0"
+    hdr_data['HDUCLAS1'] = "SPECTRUM"
+    hdr_data['HDUVERS1'] = "1.2.1"
+    hdr_data['HDUVERS'] = "1.2.1"
+
+    hdr_data['AREASCAL'] = "1"
+    hdr_data['BACKSCAL'] = "1"
+    hdr_data['CORRSCAL'] = "1"
+    hdr_data['BACKFILE'] = "none"
+
+    hdr_data['RESPFILE'] = "minxss_fm3_RMF.fits"
+    hdr_data['ANCRFILE'] = "minxss_fm3_ARF.fits"
+
+    hdr_data['CHANTYPE'] = "PHA"
+    hdr_data['POISSERR'] = "F"
+
+    hdr_data['CORRFILE'] = "none"
+    hdr_data['EXTNAME']  = 'SPECTRUM'
+    hdr_data['FILTER']   = "Be/Kapton"
+    hdr_data['EXPOSURE'] = "9"
+    hdr_data['DETCHANS'] = "1000"
+    hdr_data['GROUPING'] = "0"
+
     channel_number_array = []
-    quality_array = []
+    #quality_array = []
     systematic_error_array = []
     for i in range(1,1001,1):
         channel_number_array.append(np.int32(i))
-        quality_array.append(np.int16(1) - np.int16(daxsslevel1['VALID_FLAG'][y_dim_1.get(),i+5]))
+        #quality_array.append(np.int16(1) - np.int16(daxsslevel1['VALID_FLAG'][y_dim_1.get(),i+5]))
         systematic_error_array.append(np.float32(daxsslevel1['SPECTRUM_CPS_ACCURACY'][y_dim_1.get(), i+5]/daxsslevel1['SPECTRUM_CPS'][y_dim_1.get(),i+5]))
 
     c1 = channel_number_array
     c2 = daxsslevel1['SPECTRUM_CPS'][y_dim_1.get(),6:1006]
     c3 = daxsslevel1['SPECTRUM_CPS_PRECISION'][y_dim_1.get(), 6:1006] # Precision = Statitical Error
     c4 = systematic_error_array  # Accuracy = Systematic Error
-    c5 = quality_array
+    #c5 = quality_array
 
     print(type(systematic_error_array[0]))
-    # Data
-    hdu_data = fits.BinTableHDU.from_columns(
-        [fits.Column(name='CHANNEL',    format='J', array=c1),
-         fits.Column(name='RATE',       format='E', array=c2),
-         fits.Column(name='STAT_ERR',   format='E', array=c3),
-         fits.Column(name='SYS_ERR',    format='E', array=c4),
-         fits.Column(name='QUALITY',    format='J', array=c5)], header=hdr)
+
     # Creating and Storing the FITS File
-    hdul = fits.HDUList([dummy_primary, hdu_data])
+
 
     time_ISO_String = []
     for var_index in range(0, 20):
         time_str = daxsslevel1['TIME_ISO'][int(y_dim_1.get())][var_index].decode("utf-8")
         time_ISO_String.append(time_str)
 
-    filename = 'Output_Files/minxss_fm3_PHA_'+''.join(time_ISO_String).replace(':', '-')+'.PHA'
+    hdr_dummy['FILENAME'] = 'minxss_fm3_PHA_'+''.join(time_ISO_String).replace(':', '-')+'.pha'
+    hdr_dummy['DATE'] = ''.join(time_ISO_String).replace(':', '-')
+
+    hdr_data['FILENAME'] = hdr_dummy['FILENAME']
+    hdr_data['DATE'] =  hdr_dummy['DATE']
+
+    # Data
+    hdu_data = fits.BinTableHDU.from_columns(
+            [fits.Column(name='CHANNEL', format='J', array=c1),
+             fits.Column(name='RATE', format='E', array=c2),
+             fits.Column(name='STAT_ERR', format='E', array=c3),
+             fits.Column(name='SYS_ERR', format='E', array=c4)],header=hdr_data)
+             #fits.Column(name='QUALITY', format='J', array=c5)],
+    dummy_primary = fits.PrimaryHDU(header=hdr_dummy)
+    hdul = fits.HDUList([dummy_primary, hdu_data])
+
+    filename = 'Output_Files/minxss_fm3_PHA_'+''.join(time_ISO_String).replace(':', '-')+'.pha'
     hdul.writeto(filename, overwrite=True)
     popupmsg("FITS File Generated", "Success! PHA FITS file generated")
 
