@@ -839,7 +839,7 @@ menu = Menu(root)
 root.config(menu=menu)
 menu.add_command(label="Select DAXSS Level-1 netCDF file", command=loadRawDataUser)
 menu.add_command(label="About", command=aboutMenu)
-menu.add_command(label="Download GOES Data", command=downloadData)
+#menu.add_command(label="Download GOES Data", command=downloadData)
 
 
 bg = ImageTk.PhotoImage(Image.open("daxss_plotter_utility_images/background.jpg").resize((1200,200), Image.ANTIALIAS))
